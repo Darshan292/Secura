@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 12345678
+fsadfsadfasd
 def Encrypt_Decrypt(filepath, filename, fileextn, key):
     file = open(filepath + "/" + filename + "." + fileextn, "rb")
     data = file.read()
