@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-fsadfsadfasd
 def Encrypt_Decrypt(filepath, filename, fileextn, key):
     file = open(filepath + "/" + filename + "." + fileextn, "rb")
     data = file.read()
