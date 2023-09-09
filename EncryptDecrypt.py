@@ -27,12 +27,6 @@ def decrypt(filepath,filename, fileextn, key):
     with open(filepath + "/" + filename + "." + fileextn, "wb") as file:
         file.write(decrypted_data)
 
-    # with open("D:\FiletoProtect\IMG_20210516_105253_764.jpg",'rb') as file:
-    #     plain = file.read()
-    # encrypted_data=cipher_suite.encrypt(plain)
-    # with open("D:\FiletoProtect\IMG_20210516_105253_764.jpg",'wb') as file:
-    #     file.write(encrypted_data)
-    #     file.close()
         
 def encrdecr():
     key=generatekey()
