@@ -7,6 +7,7 @@ import subprocess, time
 import cv2
 import keyboard
 from dotenv import load_dotenv
+from tkinter import messagebox
 
 load_dotenv()
 
@@ -34,15 +35,13 @@ def open_folder():
         if check_password(people, owner):
             cv2.destroyAllWindows()
             EncryptDecrypt.encrdecr()
+
         else:
-            tk.messagebox.showerror("Error", "Unknown Person.")
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("Error", "Unknown Person.")
             sys.exit()
 
-def main():
-
-    open_folder()
-
-
 if __name__ == "__main__":
-    main()
+    open_folder()
 
