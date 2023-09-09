@@ -12,6 +12,7 @@ from tkinter import messagebox
 load_dotenv()
 
 def check_password(people, owner):
+    # Compare the entered password with the correct password
     if owner in people:
         if float(people[owner]) > 95.00:
             return True
