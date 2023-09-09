@@ -1,6 +1,6 @@
 import tkinter as tk
 import os,sys
-import Encrypt_Decrypt
+import EncryptDecrypt
 import FaceRecognition
 import pygetwindow as gw
 import subprocess, time
@@ -33,12 +33,7 @@ def open_folder():
         print(people)
         if check_password(people, owner):
             cv2.destroyAllWindows()
-            Encrypt_Decrypt.main()
-            subprocess.Popen(os.getenv('Encrypted_files_path'))  
-            while True:
-                if keyboard.is_pressed('c'):
-                    break
-            Encrypt_Decrypt.main()
+            EncryptDecrypt.encrdecr()
         else:
             tk.messagebox.showerror("Error", "Unknown Person.")
             sys.exit()
