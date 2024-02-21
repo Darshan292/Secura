@@ -10,7 +10,8 @@ You can save the key either as a separate file or as a value for a variable in .
 
 
 ## How to use Secura
-1. To encrypt the files initially, add the sensitive file to a folder and then execute the encryption function.
-2. Save the path of the folder as "encrypted_files" in .env file.
-3. Save the folder path which contains authorised user's image as "People_images_path".
-4. For encryption you can also use Vernam Cipher algorithm which uses xor operation for encryption and decryption (as in Encrypt_Decrypt.py)
+1. Specify the path of authorised user's image as "People_images_path".
+2. Save the path of the sensitive folder as "encrypted_files" in .env file.
+3. Run the program, the sensitive folder will be opened. Add the files that has to be encrypted into the folder.
+4. Press the specified key inorder to encrypt the files and stop the program.
+5. Next time when you run the program the sensitive folder will be opened for authorised user and the files will be decrypted.
