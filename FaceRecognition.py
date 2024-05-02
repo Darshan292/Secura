@@ -1,35 +1,24 @@
 import face_recognition
-import os, sys
-import cv2
-import numpy as np 
+import os
 import math
+import cv2
+import numpy as np
+import sys
+from ultralytics import YOLO
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def face_recognised(face_distance, face_match_threshold = 0.6):
-    range = (1.0-face_match_threshold)
-    linear_value = (1.0 - face_distance)/(range * 2.0)
+model = YOLO("./models/l_version_1_30.pt")
 
-    if face_distance > face_match_threshold:
-        return str(round(linear_value * 100, 2))+"%"
-    else:
-        value = (linear_value + ((1.0-linear_value)*math.pow((linear_value-0.5)*2, 0.2)))*100
-        return str(round(value, 2))+ '%'
-    
+classNames = ["fake", "real"]
 
 class FaceRecognize:
-    face_location = []
-    face_encodings = []
-    face_names = []
     known_face_encoding = []
     known_face_names = []
-    names_in_frame = []
-    process_current_frame = True
 
     def __init__(self):
         self.encode_face()
-
 
     def encode_face(self):
         for image in os.listdir(os.getenv('People_images_path')):
@@ -39,62 +28,76 @@ class FaceRecognize:
             self.known_face_encoding.append(face_encoding)
             self.known_face_names.append(os.path.splitext(image)[0])
 
-        print(self.known_face_names)
-
-    
     def run_recognition(self):
-        
-        video_capture = cv2.VideoCapture(0)
-
+        video_capture = cv2.VideoCapture("C:/Users/asus/Downloads/Test1 - Made with Clipchamp.mp4")
+        # video_capture = cv2.VideoCapture(0)
+        video_capture.set(3, 640)
+        video_capture.set(4, 480)
+        name=""
+        cv2.namedWindow("Face Recognition", cv2.WINDOW_NORMAL)  # WINDOW_NORMAL allows resizing
+        cv2.resizeWindow("Face Recognition", 1280, 720) 
 
         if not video_capture.isOpened():
             sys.exit('Video Source Not Found')
-        
+
         while True:
             ret, frame = video_capture.read()
+            if not ret:
+                break  # Break the loop if no frame is read
 
-            if self.process_current_frame:
-                small_frame = cv2.resize(frame, (0,0), fx=0.25, fy=0.25)
-                rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+            results = model(frame, stream=True, verbose=False)
+            for r in results:
+                boxes = r.boxes
+                for box in boxes:
+                    conf = math.ceil((box.conf[0] * 100)) / 100
+                    cls = int(box.cls[0])
+                    x1, y1, x2, y2 = box.xyxy.squeeze().tolist()
 
-                self.face_location = face_recognition.face_locations(rgb_small_frame)
-                self.face_encodings = face_recognition.face_encodings(rgb_small_frame, self.face_location)
+                    if conf > 0.6 and classNames[cls] == "real":  # Assuming class index 1 is for real face
 
-                self.face_names = []
-                for face_encoding in self.face_encodings:
-                    matches = face_recognition.compare_faces(self.known_face_encoding, face_encoding)
-                    name = 'Unknown'
-                    confidence  = '0.0'
+                        # Crop the face from the frame using the coordinates
+                        face_image = frame[int(y1):int(y2), int(x1):int(x2)]
 
-                    face_distances = face_recognition.face_distance(self.known_face_encoding, face_encoding)
-                    best_match_index = np.argmin(face_distances)
+                        # Convert the face_image to RGB format
+                        face_image_rgb = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
 
-                    if matches[best_match_index]:
-                        name = self.known_face_names[best_match_index]
-                        confidence = face_recognised(face_distances[best_match_index])
-                    
-                    self.face_names.append(f'{name} ({confidence})')
+                        # Encode the detected face if face is found
+                        face_encodings = face_recognition.face_encodings(face_image_rgb)
+                        if len(face_encodings) > 0:
+                            detected_face_encoding = face_encodings[0]
 
-            self.process_current_frame = not self.process_current_frame
+                            # Compare the detected face encoding with known authentic face encodings
+                            face_distances = face_recognition.face_distance(FaceRecognize.known_face_encoding, detected_face_encoding)
+                            best_match_index = np.argmin(face_distances)
+                            face_distance = face_distances[best_match_index]
 
-            for(top, right, bottom, left), name in zip(self.face_location, self.face_names):
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
-
-                cv2.rectangle(frame, (left,top), (right, bottom), (0, 0, 255), 2)
-                cv2.rectangle(frame, (left,bottom-35), (right, bottom), (0, 0, 255), -1)
-                cv2.putText(frame, name, (left+6, bottom-6), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255,255,255), 1)
+                            # Assuming face_distance_threshold is a value you define
+                            if face_distance < 0.4:
+                                # Face is recognized as authentic, draw a green box around it
+                                name=str(FaceRecognize.known_face_names[best_match_index])
+                                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                            else:
+                                # Face is not recognized as authentic, draw a red box around it
+                                name="Unknown"
+                                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+                        else:
+                            print("No face detected in the provided image")
+                    elif conf > 0.6 and classNames[cls] == "fake":
+                        name="fake"
+                        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 2)
+                        cv2.putText(frame, "Fake", (int(x1)+6, int(y2)-6), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255,255,255), 1)
 
             cv2.imshow('Face Recognition', frame)
 
-            if cv2.waitKey(1) == ord('o'):
-                return self.face_names
             if cv2.waitKey(1) == ord('q'):
                 break
+            if cv2.waitKey(1)==ord('o'):
+                return name
+
         video_capture.release()
+        cv2.destroyAllWindows()
 
-
-
-
+# Usage example
+# if __name__ == "__main__":
+#     face_recognizer = FaceRecognize()
+#     face_recognizer.run_recognition()

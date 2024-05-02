@@ -50,7 +50,8 @@ def encrdecr():
         file_name, file_extn = item.split('.')
         encrypt(filepath,file_name, file_extn, key)
         print('Encrypted')
+
+if __name__ == "__main__":
+    encrdecr()
     
-
-
 
