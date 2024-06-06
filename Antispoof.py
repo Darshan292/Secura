@@ -6,11 +6,9 @@ import cvzone
 from ultralytics import YOLO
 
 confidence = 0.6
-cap = cv2.VideoCapture(0)  # For Webcam
+cap = cv2.VideoCapture(0)  
 cap.set(3, 640)
 cap.set(4, 480)
-# cap = cv2.VideoCapture("../Videos/motorbikes.mp4")  # For Video
-
 
 model = YOLO("./models/l_version_1_30.pt")
 
